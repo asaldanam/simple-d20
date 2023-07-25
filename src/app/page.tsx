@@ -1,95 +1,74 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client'
+
+import { useClassInstance } from "@ddd-toolkit/react";
+import { Character } from "@/modules/characters";
+import { Ability, Abilities } from "@/modules/characters/domain/models/Character/AbilityScores";
+import { AVAILABLE_HIT_DICES, CREATION_POINTS } from "@/modules/characters/domain/models/Character/character.constants";
+import { useEffect } from "react";
 
 export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    const character = useClassInstance(new Character({ _id: 'asdf' }))
+    
+    useEffect(() => {
+        console.log('character changes')
+    }, [character])
+
+    return (
+        <div style={{ display: 'flex', justifyContent: 'space-around', padding: '16px' }}>
+            <section style={{ flex:'0 0 200px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <input
+                    placeholder="name"
+                    onChange={(e) => character.updateCharacterInfo({ name: e.target.value })}
+                />
+                <input 
+                    placeholder="description" 
+                    onChange={(e) => character.updateCharacterInfo({ description: e.target.value })}
+                />
+
+                <span>
+                    <label htmlFor="">Hit dice</label>
+                    <select value={character.hitDice} onChange={(e) => character.setHitDice(parseInt(e.target.value))}>{AVAILABLE_HIT_DICES.map(hitDice => (
+                        <option key={hitDice} value={hitDice}>{hitDice}</option>    
+                    ))}</select>
+                </span>
+
+                <button onClick={() => character.levelUp()}>Level up</button>
+
+                {Object.keys(Abilities).map(ability => (
+                    <div key={ability}>
+                        <button
+                            onClick={() => character.decrementAbilityScore(ability as Ability)}
+                            disabled={!character.canDecrementAbilityScore(ability as Ability)}
+                        >-</button>
+                        <span>{ability}</span>
+                        <button onClick={() => character.incrementAbilityScore(ability as Ability)}>+</button>
+                    </div>
+                ))}
+            </section>
+            <section style={{ flex: '1 1 auto' }}>
+                <table border={1}>
+                    <tbody>
+                        <tr>
+                            <td>hit points</td>
+                            <td>0/{character.hitPointsMax}</td>
+                        </tr>
+                        <tr>
+                            <td>creation points</td>
+                            <td>{character.creationPoints}/{CREATION_POINTS}</td>
+                        </tr>
+                        <tr>
+                            <td>Available ability score improvements</td>
+                            <td>{character.availableAbilityScoreImprovements}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <pre>{JSON.stringify(character, null, 2)}</pre>
+                
+                <br />
+                <small>bonuses:</small>
+                <pre>{JSON.stringify(character.modifiers, null, 2)}</pre>
+            </section>
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    )
 }
